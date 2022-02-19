@@ -145,7 +145,7 @@ INIT:	;print signon message and initialize hardware
 
 	mov bx,offset signon
 	call pmsg	;print signon message
-	mov cl,0	;default to dr A: on coldstart
+	mov cl,2	;default to dr C: on coldstart
 	jmp ccp		;jump to cold start entry of CCP
 
 WBOOT:	jmp ccp+6	;direct entry to CCP at command level
@@ -380,7 +380,7 @@ dma_seg	dw	0	;DMA Base Segment
 ;---------------------------------------------
 ;|                                           |
 signon 	db	cr,lf,cr,lf
-	db	'CP/M-86 Version 1.0',cr,lf,0
+	db	'CP/M-86 Version 1.1',cr,lf,0
 ;|                                           |
 ;---------------------------------------------
 	ENDIF	;loader_bios
@@ -389,7 +389,7 @@ signon 	db	cr,lf,cr,lf
 ;---------------------------------------------
 ;|                                           |
 signon	db	cr,lf,cr,lf
-	db	'System Generated - 13 Feb 2022'
+	db	'System Generated - 19 Feb 2022'
 	db	cr,lf,0
 ;|                                           |
 ;---------------------------------------------
@@ -427,8 +427,8 @@ loc_stk	rw  32	;local stack for initialization
 stkbase	equ offset $
 
 lastoff	equ offset $
-tpa_seg	equ 4000h + (lastoff+15) / 16
-tpa_len	equ 6000h - tpa_seg
+tpa_seg	equ 1400h + (lastoff+15) / 16
+tpa_len	equ 1800h - tpa_seg
 	db 0	;fill last address for GENCMD
 
 ;*********************************************

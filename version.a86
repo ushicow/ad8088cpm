@@ -1,0 +1,47 @@
+        cseg
+        org     0
+BDOSI	EQU	0E0H		;BDOS INTERRUPT
+coutf		equ	2
+pstrf		equ	9
+ver             equ     0ch
+
+        mov     cl,pstrf
+        mov     dx,offset msg
+        int     bdosi
+
+        mov     cl,ver          ;BDOS VERSION
+	INT	BDOSI		;TO BDOS
+        MOV     ax,bx
+        call    phex
+
+	mov     cl,0
+        mov     dl,0
+        int     bdosi
+
+phex:				;print 4 hex characters from ax
+	mov cx,0404h		; 4 in both CH and CL
+lhex:	
+	rol ax,cl		; rotate left 4
+	push cx ! push ax	; save crucial registers
+	call pnib		; print hex nibble
+	pop ax ! pop cx		; restore registers
+	dec ch ! jnz lhex	; and loop four times
+	ret
+pnib:				;print low nibble in AL as hex char
+	and al,0fh ! cmp al,9
+	ja p10			;above 9 ?
+	add al,'0'		;digit
+	jmp prn
+p10:	add al,'A'-10		;char a-e
+prn:	mov dl,al
+	mov cl,coutf
+        int BDOSI
+        ret
+
+data    equ offset $
+
+        dseg    $
+        org     data
+ msg    db      'BDOS Version $'
+
+        end

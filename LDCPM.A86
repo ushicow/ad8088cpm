@@ -39,7 +39,7 @@ lbios_offset	equ	1200h		; offset of LBIOS
 biosoff		equ	2500h		; offset of BIOS from start of CPM.SYS
 					; this is the entry point into CPM.SYS
 
-bootdrv		equ	0		; boot drive always zero
+bootdrv		equ	2		; boot drive C
 
 					; 128 bytes of CPM.SYS
 
