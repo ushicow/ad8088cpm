@@ -1,0 +1,7 @@
+c:asm86 ccp
+c:asm86 bdos
+c:asm86 bios
+c:pip cpm.h86=ccp.h86,bdos.h86,bios.h86
+c:gencmd cpm 8080 code[a4000]
+c:pip cpm.sys=cpm.cmd
+

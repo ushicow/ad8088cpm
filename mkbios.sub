@@ -1,0 +1,7 @@
+era b:cpm.sys
+era b:xcpm.h86
+asm86 b:bios
+pip b:xcpm.h86=b:cpm.h86,b:bios.h86
+gencmd b:xcpm 8080 code[a4000]
+ren b:cpm.sys=b:xcpm.cmd
+

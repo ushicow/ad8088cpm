@@ -1,5 +1,6 @@
 disks   4
-diskdef 0,1,32,,1024,128,64,64,3
+diskdef 0,1,32,,1024,128,48,48,3
 diskdef 1,0
 diskdef 2,1,256,,2048,4080,1024,0,1
 diskdef 3,2
+endef

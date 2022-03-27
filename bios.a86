@@ -10,7 +10,7 @@
 ;*                                           *
 ;*                                           *
 ;*     Programmer: Atsushi, USHIRODA         *
-;*     Revisions : 0.1                       *
+;*     Revisions : 1.0                       *
 ;*                                           *
 ;*********************************************
 
@@ -123,6 +123,20 @@ INIT:	;print signon message and initialize hardware
 	pop ds		;restore the DS register
 
 ;	(additional CP/M-86 initialization)
+	mov ax,seg ad512k
+	mov es,ax
+	mov al,es:byte ptr ad512k
+	inc al
+	mov al,es:byte ptr ad512k
+	cmp al,es:byte ptr ad512k
+	jne no_exram
+	mov al,2
+	mov byte ptr segtable,al
+	mov bx,offset memory
+	call pmsg
+	mov ax,0
+	mov es,ax
+no_exram:
 ;|                                           |
 ;---------------------------------------------
 	ENDIF	;not loader_bios
@@ -381,6 +395,8 @@ dma_seg	dw	0	;DMA Base Segment
 ;|                                           |
 signon 	db	cr,lf,cr,lf
 	db	'CP/M-86 Version 1.1',cr,lf,0
+memory	db	'AD128K or AD512K required'
+	db	cr,lf,0
 ;|                                           |
 ;---------------------------------------------
 	ENDIF	;loader_bios
@@ -389,7 +405,9 @@ signon 	db	cr,lf,cr,lf
 ;---------------------------------------------
 ;|                                           |
 signon	db	cr,lf,cr,lf
-	db	'System Generated - 19 Feb 2022'
+	db	'System Generated - 26 Mar. 2022'
+	db	cr,lf,0
+memory	db	'AD512K found'
 	db	cr,lf,0
 ;|                                           |
 ;---------------------------------------------
@@ -404,24 +422,10 @@ int_trp	db	cr,lf
 segtable db 1	;1 segments
 	dw tpa_seg	;1st seg starts after BIOS
 	dw tpa_len	;and extends to 5FFFF
+	dw 6000H	;2nd is 60000 -
+	dw 6000H	;C0000 (384k)
 
 	include apdisk.lib ;read in disk definitions
-;
-;	Uninitialized Scratch Memory Follows:
-;
-begdat	equ	offset $	;Start of Scratch Area
-dirbuf	rs	128		;Directory Buffer
-csv0	rs	css0		;Check Vector
-csv1	rs	css1
-csv2	rs	css2
-csv3	rs	css3
-alv0	rs	als0		;Alloc Vector
-alv1	rs	als1
-alv2	rs	als2
-alv3	rs	als3
-enddat	equ	offset $	;End of Scratch Area
-datsiz	equ	offset $-begdat	;Size of Scratch Area
-	db	0		;Marks End of Module
 
 loc_stk	rw  32	;local stack for initialization
 stkbase	equ offset $
@@ -445,6 +449,14 @@ int0_segment	rw	1
 
 bdos_offset	rw	1
 bdos_segment	rw	1
+
+	dseg	4000h	;AD128K
+	org	0
+ad128k	rs	1
+
+	dseg	8000h	;AD512K
+	org	0
+ad512k	rs	1
 
 ; APPLE 2 Memory Area
 	dseg 1000h

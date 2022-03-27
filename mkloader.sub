@@ -1,0 +1,4 @@
+asm86 b:ldbios
+pip b:loader.h86=b:ldcpm.h86,b:ldbdos.h86,b:ldbios.h86
+gencmd b:loader 8080 code[a80]
+

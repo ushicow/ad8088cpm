@@ -1,0 +1,34 @@
+# Apple II CP/M skew o Apple II DOS 3.3 skew
+diskdef apple-do
+  seclen 256
+  tracks 35
+  sectrk 16
+  blocksize 1024
+  maxdir 64
+  skewtab 0,6,12,3,9,15,14,5,11,2,8,7,13,4,10,1
+  boottrk 3
+  os 2.2
+end
+
+# Apple II CP/M skew o Apple II PRODOS skew
+diskdef apple-po
+  seclen 256
+  tracks 35
+  sectrk 16
+  blocksize 1024
+  maxdir 64
+  skewtab 0,9,3,12,6,15,1,10,4,13,7,8,2,11,5,14
+  boottrk 3
+  os 2.2
+end
+
+diskdef hd8m
+  seclen 128
+  tracks 256
+  sectrk 256
+  blocksize 2048
+  maxdir 1024
+  skew 0
+  boottrk 1
+  os 2.2
+end

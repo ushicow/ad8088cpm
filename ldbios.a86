@@ -10,7 +10,7 @@
 ;*                                           *
 ;*                                           *
 ;*     Programmer: Atsushi, USHIRODA         *
-;*     Revisions : 0.1                       *
+;*     Revisions : 0.3                       *
 ;*                                           *
 ;*********************************************
 
@@ -389,7 +389,7 @@ signon 	db	cr,lf,cr,lf
 ;---------------------------------------------
 ;|                                           |
 signon	db	cr,lf,cr,lf
-	db	'System Generated - 19 Feb 2022'
+	db	'System Generated - 21 Mar. 2022'
 	db	cr,lf,0
 ;|                                           |
 ;---------------------------------------------
@@ -403,32 +403,16 @@ int_trp	db	cr,lf
 
 segtable db 1	;1 segments
 	dw tpa_seg	;1st seg starts after BIOS
-	dw tpa_len	;and extends to 5FFFF
-
-	include apdisk.lib ;read in disk definitions
-;
-;	Uninitialized Scratch Memory Follows:
-;
-begdat	equ	offset $	;Start of Scratch Area
-dirbuf	rs	128		;Directory Buffer
-csv0	rs	css0		;Check Vector
-csv1	rs	css1
-csv2	rs	css2
-csv3	rs	css3
-alv0	rs	als0		;Alloc Vector
-alv1	rs	als1
-alv2	rs	als2
-alv3	rs	als3
-enddat	equ	offset $	;End of Scratch Area
-datsiz	equ	offset $-begdat	;Size of Scratch Area
-	db	0		;Marks End of Module
+	dw tpa_len	;and extends to 7FFFF
 
 loc_stk	rw  32	;local stack for initialization
 stkbase	equ offset $
 
+	include apdisk.lib ;read in disk definitions
+
 lastoff	equ offset $
-tpa_seg	equ 1400h + (lastoff+15) / 16
-tpa_len	equ 1800h - tpa_seg
+tpa_seg	equ 4000h + (lastoff+15) / 16
+tpa_len	equ 6000h - tpa_seg
 	db 0	;fill last address for GENCMD
 
 ;*********************************************
