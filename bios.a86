@@ -123,11 +123,30 @@ INIT:	;print signon message and initialize hardware
 	pop ds		;restore the DS register
 
 ;	(additional CP/M-86 initialization)
+	mov ax,xlt4+1
+	mov dpe4,ax
+	mov ax,seg ramdisk
+	mov es,ax
+	mov al,es:byte ptr ramdisk
+	inc al
+	mov es:byte ptr ramdisk,al
+	cmp al,es:byte ptr ramdisk
+	jne chk_exram
+	mov di,0
+	mov cx,1024
+	mov al,0e5h
+	rep stos al
+	mov ax,xlt4
+	mov dpe4,ax
+	mov bx,offset ramdsk
+	call pmsg
+
+chk_exram:
 	mov ax,seg ad512k
 	mov es,ax
 	mov al,es:byte ptr ad512k
 	inc al
-	mov al,es:byte ptr ad512k
+	mov es:byte ptr ad512k,al
 	cmp al,es:byte ptr ad512k
 	jne no_exram
 	mov al,2
@@ -268,7 +287,7 @@ ndisks	equ	4 ;number of disks (up to 16)
 	mov disk,cl	;save disk number
 	mov bx,0000h	;ready for error return
 	cmp cl,ndisks	;n beyond max disks?
-	jnb return	;return if so
+	jnb chkramdsk	;check ram disk if so
 	push es
 	mov ax,apseg
 	mov es,ax
@@ -284,6 +303,16 @@ ndisks	equ	4 ;number of disks (up to 16)
 	mov cx,offset dpbase
 	add bx,cx	;dpbase + n * 16
 return:	ret		;bx = .dph
+
+chkramdsk:
+ramdrv	equ 15		;RAMDISK is P:
+	cmp cl,ramdrv
+	jne return
+	mov ax,dpe4
+	cmp ax,xlt4
+	jne return
+	mov bx,offset dpe4
+	ret
 
 HOME:	;move selected disk to home position (Track 0)
 	mov trk,0	;set disk i/o to track zero
@@ -331,28 +360,75 @@ GETSEGT:  ;return address of physical memory table
 READ:	
 	push es
 	push ds
-	call setup
+	IF	not loader_bios
+;---------------------------------------------
+;|                                           |
+; READ RAMDISK
+	mov al,disk
+	cmp al,ramdrv
+	jne RDDISK
+	mov di,dma_adr
+	mov ax,dma_seg
+	mov es,ax
+	mov ax,trk
+	sal ax,1
+	sal ax,1
+	sal ax,1
+	add ax,sect
+	mov cl,7
+	sal ax,cl
+	mov si,ax
+	mov ax,seg ramdisk
+	jmp CPSEC
+;|                                           |
+;---------------------------------------------
+	ENDIF	;not loader_bios
+RDDISK:	call setup
 	mov ah,13
 	call a2bios
+	mov al,es:reg_al ; load error code to bl
+	cmp al,0
+	jnz RDRET	; error return
 	mov di,dma_adr
 	mov ax,dma_seg
 	mov es,ax
 	mov si,offset secbuf
 	mov ax,apseg
-	mov ds,ax
+CPSEC:	mov ds,ax
 	mov cx,128
 	rep movs al,al
-	mov ax,apseg
-	mov es,ax
-	mov al,es:reg_al
-	pop ds
+	mov al,0
+RDRET:	pop ds
 	pop es
 	ret
 
 WRITE:
 	push es
 	push ds
-	call setup
+	IF	not loader_bios
+;---------------------------------------------
+;|                                           |
+; WRITE RAMDISK
+	mov al,disk
+	cmp al,ramdrv
+	jne WRDISK
+	mov ax,trk
+	sal ax,1
+	sal ax,1
+	sal ax,1
+	add ax,sect
+	mov cl,7
+	sal ax,cl
+	mov di,ax
+	mov ax,seg ramdisk
+	mov es,ax
+	mov si,dma_adr
+	mov ax,dma_seg
+	jmp CPSEC
+;|                                           |
+;---------------------------------------------
+	ENDIF	;not loader_bios
+WRDISK:	call setup
 	mov di,offset secbuf
 	mov si,dma_adr
 	mov ax,dma_seg
@@ -409,6 +485,8 @@ signon	db	cr,lf,cr,lf
 	db	cr,lf,0
 memory	db	'AD512K found'
 	db	cr,lf,0
+ramdsk  db	'RAMDISK P: enabled'
+	db	cr,lf,0
 ;|                                           |
 ;---------------------------------------------
 	ENDIF	;not loader_bios
@@ -449,6 +527,9 @@ int0_segment	rw	1
 
 bdos_offset	rw	1
 bdos_segment	rw	1
+
+	dseg	2000h
+ramdisk	rs	1
 
 	dseg	4000h	;AD128K
 	org	0
